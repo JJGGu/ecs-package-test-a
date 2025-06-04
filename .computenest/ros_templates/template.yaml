@@ -1,64 +1,10 @@
 ROSTemplateFormatVersion: '2015-09-01'
+Conditions:
+  CreateVpcConditions:
+    Fn::Equals:
+      - NewVPC
+      - Ref: VpcOption
 Parameters:
-  PayType:
-    Type: String
-    Label:
-      en: ECS Instance Charge Type
-      zh-cn: 付费类型
-    Default: PostPaid
-    AllowedValues:
-      - PostPaid
-      - PrePaid
-    AssociationProperty: ChargeType
-    AssociationPropertyMetadata:
-      LocaleKey: InstanceChargeType
-  PayPeriodUnit:
-    Type: String
-    Label:
-      en: Pay Period Unit
-      zh-cn: 购买资源时长周期
-    Default: Month
-    AllowedValues:
-      - Month
-      - Year
-    AssociationProperty: PayPeriodUnit
-    AssociationPropertyMetadata:
-      Visible:
-        Condition:
-          Fn::Not:
-            Fn::Equals:
-              - ${PayType}
-              - PostPaid
-  PayPeriod:
-    Type: Number
-    Label:
-      en: Period
-      zh-cn: 购买资源时长
-    Default: 1
-    AllowedValues:
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      - 6
-      - 7
-      - 8
-      - 9
-    AssociationProperty: PayPeriod
-    AssociationPropertyMetadata:
-      Visible:
-        Condition:
-          Fn::Not:
-            Fn::Equals:
-              - ${PayType}
-              - PostPaid
-  ZoneId:
-    Type: String
-    Label:
-      en: Zone ID
-      zh-cn: 可用区ID
-    AssociationProperty: ALIYUN::ECS::Instance::ZoneId
   VpcOption:
     Type: String
     AllowedValues:
@@ -118,6 +64,98 @@ Parameters:
           Fn::Equals:
             - NewVPC
             - ${VpcOption}
+  PayType:
+    Type: String
+    Label:
+      en: ECS Instance Charge Type
+      zh-cn: 付费类型
+    Default: PostPaid
+    AllowedValues:
+      - PostPaid
+      - PrePaid
+    AssociationProperty: ChargeType
+    AssociationPropertyMetadata:
+      LocaleKey: InstanceChargeType
+  PayPeriodUnit:
+    Type: String
+    Label:
+      en: Pay Period Unit
+      zh-cn: 购买资源时长周期
+    Default: Month
+    AllowedValues:
+      - Month
+      - Year
+    AssociationProperty: PayPeriodUnit
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Not:
+            Fn::Equals:
+              - ${PayType}
+              - PostPaid
+  PayPeriod:
+    Type: Number
+    Label:
+      en: Period
+      zh-cn: 购买资源时长
+    Default: 1
+    AllowedValues:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+    AssociationProperty: PayPeriod
+    AssociationPropertyMetadata:
+      Visible:
+        Condition:
+          Fn::Not:
+            Fn::Equals:
+              - ${PayType}
+              - PostPaid
+  EcsInstanceType:
+    Type: String
+    Label:
+      en: Instance Type
+      zh-cn: 实例类型
+    AssociationProperty: ALIYUN::ECS::Instance::InstanceType
+    AssociationPropertyMetadata:
+      InstanceChargeType: ${PayType}
+      Constraints:
+        InstanceTypeFamily:
+          - ecs.u1
+          - ecs.e
+  InstancePassword:
+    NoEcho: true
+    Type: String
+    Description:
+      en: Server login password, Length 8-30, must contain three(Capital letters, lowercase letters, numbers, ()`~!@#$%^&*_-+=|{}[]:;'<>,.?/ Special symbol in)
+      zh-cn: 服务器登录密码,长度8-30，必须包含三项（大写字母、小写字母、数字、 ()`~!@#$%^&*_-+=|{}[]:;'<>,.?/ 中的特殊符号）
+    AllowedPattern: '^[a-zA-Z0-9-\(\)\`\~\!\@\#\$\%\^\&\*\_\-\+\=\|\{\}\[\]\:\;\<\>\,\.\?\/]*$'
+    Label:
+      en: Instance Password
+      zh-cn: 实例密码
+    ConstraintDescription:
+      en: Length 8-30, must contain three(Capital letters, lowercase letters, numbers, ()`~!@#$%^&*_-+=|{}[]:;'<>,.?/ Special symbol in)
+      zh-cn: 长度8-30，必须包含三项（大写字母、小写字母、数字、 ()`~!@#$%^&*_-+=|{}[]:;'<>,.?/ 中的特殊符号）
+    MinLength: 8
+    MaxLength: 30
+    AssociationProperty: ALIYUN::ECS::Instance::Password
+  ZoneId:
+    Type: String
+    Label:
+      en: Zone ID
+      zh-cn: 可用区ID
+    AssociationProperty: ALIYUN::ECS::Instance::ZoneId
+    AssociationPropertyMetadata:
+      DefaultValueStrategy: random
+      InstanceChargeType: ${PayType}
+      SystemDiskCategory: cloud_essd
+      InstanceType: ${EcsInstanceType}
   VpcId:
     Type: String
     Label:
@@ -141,53 +179,21 @@ Parameters:
     Label:
       en: VSwitch ID
       zh-cn: 交换机实例ID
-    Default: ''
     AssociationProperty: 'ALIYUN::ECS::VSwitch::VSwitchId'
     Required:
       Fn::Equals:
         - ExistingVPC
         - ${VpcOption}
+    Default: ''
     AssociationPropertyMetadata:
       AutoSelectFirst: true
-      VpcId: ${VpcId}
-      ZoneId: ${ZoneId}
+      VpcId: VpcId
+      ZoneId: ZoneId
       Visible:
         Condition:
           Fn::Equals:
             - ExistingVPC
             - ${VpcOption}
-  EcsInstanceType:
-    Type: String
-    Label:
-      en: Instance Type
-      zh-cn: 实例类型
-    AssociationProperty: ALIYUN::ECS::Instance::InstanceType
-    AssociationPropertyMetadata:
-      InstanceChargeType: ${PayType}
-      Constraints:
-        InstanceTypeFamily:
-          - ecs.u1
-  InstancePassword:
-    NoEcho: true
-    Type: String
-    Description:
-      en: Server login password, Length 8-30, must contain three(Capital letters, lowercase letters, numbers, ()`~!@#$%^&*_-+=|{}[]:;'<>,.?/ Special symbol in)
-      zh-cn: 服务器登录密码,长度8-30，必须包含三项（大写字母、小写字母、数字、 ()`~!@#$%^&*_-+=|{}[]:;'<>,.?/ 中的特殊符号）
-    AllowedPattern: '^[a-zA-Z0-9-\(\)\`\~\!\@\#\$\%\^\&\*\_\-\+\=\|\{\}\[\]\:\;\<\>\,\.\?\/]*$'
-    Label:
-      en: Instance Password
-      zh-cn: 实例密码
-    ConstraintDescription:
-      en: Length 8-30, must contain three(Capital letters, lowercase letters, numbers, ()`~!@#$%^&*_-+=|{}[]:;'<>,.?/ Special symbol in)
-      zh-cn: 长度8-30，必须包含三项（大写字母、小写字母、数字、 ()`~!@#$%^&*_-+=|{}[]:;'<>,.?/ 中的特殊符号）
-    MinLength: 8
-    MaxLength: 30
-    AssociationProperty: ALIYUN::ECS::Instance::Password
-Conditions:
-  CreateVpcConditions:
-    Fn::Equals:
-      - NewVPC
-      - Ref: VpcOption
 Resources:
   # 新建vpc
   EcsVpc:
@@ -221,9 +227,8 @@ Resources:
           - CreateVpcConditions
           - Ref: EcsVpc
           - Ref: VpcId
-      # 安全组入端口
       SecurityGroupIngress:
-        - PortRange: 8080/8080
+        - PortRange: 80/80
           Priority: 1
           SourceCidrIp: 0.0.0.0/0
           IpProtocol: tcp
@@ -244,22 +249,22 @@ Resources:
           - Ref: EcsVpc
           - Ref: VpcId
       VSwitchId:
-        Fn::If:
+        'Fn::If':
           - CreateVpcConditions
           - Ref: EcsVSwitch
           - Ref: VSwitchId
-      SecurityGroupId:
-        Ref: SecurityGroup
       ZoneId:
         Ref: ZoneId
-      ImageId: centos_7_9_x64_20G_alibase_20240403.vhd
+      SecurityGroupId:
+        Ref: SecurityGroup
+      ImageId: ecs_image_ecs-package-test-a
       Password:
         Ref: InstancePassword
       InstanceType:
         Ref: EcsInstanceType
       SystemDiskCategory: cloud_essd
       SystemDiskSize: 200
-      InternetMaxBandwidthOut: 1
+      InternetMaxBandwidthOut: 5
       IoOptimized: optimized
       MaxAmount: 1
   RunInstallCommand:
@@ -276,38 +281,26 @@ Resources:
         Fn::Sub:
           - |
             #!/bin/bash
-            function stop_application() {
-              if [ -f "/home/admin/application/deploy.sh" ]; then
-                /bin/bash /home/admin/application/deploy.sh stop
-              fi
-            }
+            cd /root/application
+            echo "start run command"
 
-            function start_application() {
-              yum install -y java
-              mkdir -p /home/admin/application
-              cd /home/admin/application
-              wget '{{ computenest::file::springboot }}' -O package.tgz
-              tar xvf package.tgz
-              /bin/bash deploy.sh start
-            }
-            stop_application
-            start_application
-          - AccountId:
-              Ref: ALIYUN::TenantId
+            ARGUS_VERSION=3.5.7 /bin/bash -c "$(curl -sS https://cms-agent-${RegionId}.oss-${RegionId}-internal.aliyuncs.com/Argus/agent_install_ecs-1.7.sh)" >> /root/install_cms_agent.log 2>&1
+          - RegionId:
+              Ref: ALIYUN::Region
 Outputs:
-  VisitUrl:
+  ServerAddress:
     Description:
-      en: VisitUrl.
+      en: ServerAddress.
       zh-cn: 访问页面。
     Value:
       Fn::Sub:
-      - http://${Address}:8080
-      - Address:
-          Fn::Select:
-          - 0
-          - Fn::GetAtt:
-            - InstanceGroup
-            - PublicIps
+        - http://${ServerAddress}:80
+        - ServerAddress:
+            Fn::Select:
+            - 0
+            - Fn::GetAtt:
+              - InstanceGroup
+              - PublicIps
 Metadata:
   ALIYUN::ROS::Interface:
     ParameterGroups:
@@ -316,12 +309,14 @@ Metadata:
           - PayPeriodUnit
           - PayPeriod
         Label:
-          default: 付费类型配置
+          zh-cn: 付费类型配置
+          en: Payment Type Configuration
       - Parameters:
           - EcsInstanceType
           - InstancePassword
         Label:
-          default: 资源配置
+          zh-cn: 资源配置
+          en: Resources Configuration
       - Parameters:
           - ZoneId
           - VpcOption
@@ -330,5 +325,6 @@ Metadata:
           - VpcCidrBlock
           - VSwitchCidrBlock
         Label:
-          default: 可用区配置
-
+          zh-cn: 可用区配置
+          en: Availability Zone Configuration
+      
