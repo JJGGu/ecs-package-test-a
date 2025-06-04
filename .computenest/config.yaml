@@ -1,0 +1,44 @@
+Service:
+  RegionId: cn-hangzhou
+  DeployType: ros
+  DeployMetadata:
+    ServiceInstanceNameRule:
+      Prefix: dm
+    SupplierDeployMetadata:
+      FileArtifactRelation:
+        '{{ computenest::file::springboot }}':
+          ArtifactId: artifact-4e82b449817b4947a234
+    TemplateConfigs:
+      - Name: ECS单机版
+        Url: 'ros_templates/template.yaml'
+        ArchitectureDiagramUrl: 'docs/architecture.png'
+        AllowedRegions:
+          - cn-beijing
+          - cn-hangzhou
+          - cn-shanghai
+  ServiceType: private
+  OperationMetadata:
+    ModifyParametersConfig:
+      - TemplateName: ECS单机版
+        Operation:
+          - Name: 变配ECS实例规格
+            Description: 变配ECS实例规格
+            Type: Custom
+            SupportPredefinedParameters: false
+            EnableLogging: false
+            Parameters:
+              - EcsInstanceType
+  UpgradeMetadata:
+    Description: 升级
+    SupportRollback: true
+    SupportUpgradeFromVersions: [ ]
+    UpgradeComponents:
+      - Configuration
+      - Resource
+  ServiceInfo:
+    Locale: zh-CN
+    ShortDescription: spring boot demo
+    Image: 'resources/icons/service_logo.png'
+    Name: SpringBoot单机版(软件包)
+  ShareType: Public
+  ApprovalType: Manual
